@@ -99,7 +99,7 @@ export function AddTransactionForm({ accounts, categories, editMode = false }) {
           onValueChange={(value) => setValue("type", value)}
           defaultValue={type}
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
           <SelectContent>
@@ -165,7 +165,7 @@ export function AddTransactionForm({ accounts, categories, editMode = false }) {
           onValueChange={(value) => setValue("category", value)}
           defaultValue={getValues("category")}
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent>
@@ -245,7 +245,7 @@ export function AddTransactionForm({ accounts, categories, editMode = false }) {
             onValueChange={(value) => setValue("recurringInterval", value)}
             defaultValue={getValues("recurringInterval")}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select interval" />
             </SelectTrigger>
             <SelectContent>
@@ -268,12 +268,12 @@ export function AddTransactionForm({ accounts, categories, editMode = false }) {
         <Button
           type="button"
           variant="outline"
-          className="w-full"
+          className="flex-1"
           onClick={() => router.back()}
         >
           Cancel
         </Button>
-        <Button type="submit" className="w-full" disabled={transactionLoading}>
+        <Button type="submit" className="flex-1" disabled={transactionLoading}>
           Create Transaction
         </Button>
       </div>

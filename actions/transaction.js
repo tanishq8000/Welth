@@ -9,10 +9,6 @@ export async function createTransaction(data) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    // Get request data for ArcJet
-
-    // Check rate limit
-
     const user = await db.user.findUnique({
       where: { clerkUserId: userId },
     });
