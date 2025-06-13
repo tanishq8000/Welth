@@ -28,10 +28,18 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { createTransaction, updateTransaction } from "@/actions/transaction";
 import { transactionSchema } from "@/app/lib/schema";
+import { ReceiptScanner } from "./receipt-scanner";
 import CreateAccountDrawer from "@/components/create-account-drawer";
 
-export function AddTransactionForm({ accounts, categories, editMode = false }) {
+export function AddTransactionForm({
+  accounts,
+  categories,
+  editMode = false,
+  initialData = null,
+}) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
 
   const {
     register,
@@ -43,21 +51,35 @@ export function AddTransactionForm({ accounts, categories, editMode = false }) {
     reset,
   } = useForm({
     resolver: zodResolver(transactionSchema),
-    defaultValues: {
-      type: "EXPENSE",
-      amount: "",
-      description: "",
-      accountId: accounts.find((ac) => ac.isDefault)?.id,
-      date: new Date(),
-      isRecurring: false,
-    },
+    defaultValues:
+      editMode && initialData
+        ? {
+            type: initialData.type,
+            amount: initialData.amount.toString(),
+            description: initialData.description,
+            accountId: initialData.accountId,
+            category: initialData.category,
+            date: new Date(initialData.date),
+            isRecurring: initialData.isRecurring,
+            ...(initialData.recurringInterval && {
+              recurringInterval: initialData.recurringInterval,
+            }),
+          }
+        : {
+            type: "EXPENSE",
+            amount: "",
+            description: "",
+            accountId: accounts.find((ac) => ac.isDefault)?.id,
+            date: new Date(),
+            isRecurring: false,
+          },
   });
 
   const {
     loading: transactionLoading,
     fn: transactionFn,
     data: transactionResult,
-  } = useFetch(createTransaction);
+  } = useFetch(editMode ? updateTransaction : createTransaction);
 
   const onSubmit = (data) => {
     const formData = {
@@ -65,7 +87,25 @@ export function AddTransactionForm({ accounts, categories, editMode = false }) {
       amount: parseFloat(data.amount),
     };
 
-    transactionFn(formData);
+    if (editMode) {
+      transactionFn(editId, formData);
+    } else {
+      transactionFn(formData);
+    }
+  };
+
+  const handleScanComplete = (scannedData) => {
+    if (scannedData) {
+      setValue("amount", scannedData.amount.toString());
+      setValue("date", new Date(scannedData.date));
+      if (scannedData.description) {
+        setValue("description", scannedData.description);
+      }
+      if (scannedData.category) {
+        setValue("category", scannedData.category);
+      }
+      toast.success("Receipt scanned successfully");
+    }
   };
 
   useEffect(() => {
@@ -91,6 +131,7 @@ export function AddTransactionForm({ accounts, categories, editMode = false }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Receipt Scanner - Only show in create mode */}
+      {!editMode && <ReceiptScanner onScanComplete={handleScanComplete} />}
 
       {/* Type */}
       <div className="space-y-2">
@@ -133,7 +174,7 @@ export function AddTransactionForm({ accounts, categories, editMode = false }) {
             onValueChange={(value) => setValue("accountId", value)}
             defaultValue={getValues("accountId")}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select account" />
             </SelectTrigger>
             <SelectContent>
@@ -274,7 +315,16 @@ export function AddTransactionForm({ accounts, categories, editMode = false }) {
           Cancel
         </Button>
         <Button type="submit" className="flex-1" disabled={transactionLoading}>
-          Create Transaction
+          {transactionLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {editMode ? "Updating..." : "Creating..."}
+            </>
+          ) : editMode ? (
+            "Update Transaction"
+          ) : (
+            "Create Transaction"
+          )}
         </Button>
       </div>
     </form>
