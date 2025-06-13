@@ -76,16 +76,23 @@ export default function EmailTemplate({
             <Section style={styles.statsContainer}>
               <div style={styles.stat}>
                 <Text style={styles.text}>Total Income</Text>
-                <Text style={styles.heading}>${data?.stats.totalIncome}</Text>
+                <Text style={styles.heading}>
+                  ${data?.stats?.totalIncome?.toFixed(2)}
+                </Text>
               </div>
               <div style={styles.stat}>
                 <Text style={styles.text}>Total Expenses</Text>
-                <Text style={styles.heading}>${data?.stats.totalExpenses}</Text>
+                <Text style={styles.heading}>
+                  ${data?.stats?.totalExpenses?.toFixed(2)}
+                </Text>
               </div>
               <div style={styles.stat}>
                 <Text style={styles.text}>Net</Text>
                 <Text style={styles.heading}>
-                  ${data?.stats.totalIncome - data?.stats.totalExpenses}
+                  $
+                  {(
+                    data?.stats?.totalIncome - data?.stats?.totalExpenses
+                  ).toFixed(2)}
                 </Text>
               </div>
             </Section>
@@ -94,14 +101,28 @@ export default function EmailTemplate({
             {data?.stats?.byCategory && (
               <Section style={styles.section}>
                 <Heading style={styles.heading}>Expenses by Category</Heading>
-                {Object.entries(data?.stats.byCategory).map(
-                  ([category, amount]) => (
-                    <div key={category} style={styles.row}>
-                      <Text style={styles.text}>{category}</Text>
-                      <Text style={styles.text}>${amount}</Text>
-                    </div>
-                  )
-                )}
+                <table width="100%" style={{ borderCollapse: "collapse" }}>
+                  <tbody>
+                    {Object.entries(data?.stats.byCategory).map(
+                      ([category, amount]) => (
+                        <tr key={category}>
+                          <td style={{ ...styles.text, padding: "4px 0" }}>
+                            {category}
+                          </td>
+                          <td
+                            style={{
+                              ...styles.text,
+                              padding: "4px 0",
+                              textAlign: "right",
+                            }}
+                          >
+                            ${amount.toFixed(2)}
+                          </td>
+                        </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
               </Section>
             )}
 
